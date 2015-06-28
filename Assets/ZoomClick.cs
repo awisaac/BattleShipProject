@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class ZoomClick : MonoBehaviour {
@@ -6,6 +7,7 @@ public class ZoomClick : MonoBehaviour {
 	float XCoord;
 	float YCoord;
 	GameObject Origin;
+	GameObject DockButton;
 	public GameObject ZoomButton;	
 
 	// Lerp Values for Camera to zoom in
@@ -26,12 +28,13 @@ public class ZoomClick : MonoBehaviour {
 		ZoomedOut = true;
 		Origin = GameObject.Find ("Origin");
 		ZoomButton = GameObject.Find ("ZoomButton");
+		DockButton = GameObject.Find ("DockButton");
 		ZoomButton.SetActive (false);
 
 		ToTarget = Camera.main.transform.position;
 		FromPosition = Camera.main.transform.position;
 		CurrentLerpTime = 0;
-		TotalLerpTime = 0.5f; // 1 second to transition camera
+		TotalLerpTime = 0.5f; // 1/2 second to transition camera
 
 		StartOrtho = 500;
 		EndOrtho = 500;
@@ -104,6 +107,8 @@ public class ZoomClick : MonoBehaviour {
 	public void ZoomOutClick()
 	{
 		ZoomedOut = true;
+		DockButton.GetComponent<CanvasGroup> ().alpha = 0;
+		DockButton.GetComponent<Button> ().interactable = false;
 
 		Origin.GetComponent<Gridlines>().SubGrid(false);
 		ZoomButton.SetActive(false);

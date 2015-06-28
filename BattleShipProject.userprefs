@@ -1,10 +1,11 @@
 ﻿<Properties>
-  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Draggable.cs">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Ships.cs">
     <Files>
-      <File FileName="Assets\ZoomClick.cs" Line="9" Column="9" />
-      <File FileName="Assets\Gridlines.cs" Line="1" Column="1" />
-      <File FileName="Assets\Draggable.cs" Line="29" Column="33" />
+      <File FileName="Assets\Draggable.cs" Line="73" Column="14" />
+      <File FileName="Assets\ZoomClick.cs" Line="2" Column="22" />
+      <File FileName="Assets\Ships.cs" Line="252" Column="80" />
+      <File FileName="Assets\Options.cs" Line="56" Column="3" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
