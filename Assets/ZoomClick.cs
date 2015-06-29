@@ -9,6 +9,7 @@ public class ZoomClick : MonoBehaviour {
 	GameObject Origin;
 	GameObject DockButton;
 	public GameObject ZoomButton;	
+	GameObject OptionsCanvas;
 
 	// Lerp Values for Camera to zoom in
 	Vector3 ToTarget;
@@ -29,6 +30,8 @@ public class ZoomClick : MonoBehaviour {
 		Origin = GameObject.Find ("Origin");
 		ZoomButton = GameObject.Find ("ZoomButton");
 		DockButton = GameObject.Find ("DockButton");
+		OptionsCanvas = GameObject.Find ("OptionsCanvas");
+
 		ZoomButton.SetActive (false);
 
 		ToTarget = Camera.main.transform.position;
@@ -45,7 +48,7 @@ public class ZoomClick : MonoBehaviour {
 	void Update () {
 
 		// Initial Zoom In where user clicks
-		if (Input.GetMouseButtonDown (0) && ZoomedOut) {
+		if (Input.GetMouseButtonDown (0) && ZoomedOut && !gameObject.GetComponent<Ships>().pointerOverPanel) {
 			RaycastHit hitInfo = new RaycastHit ();
 			if (Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitInfo) && hitInfo.transform == transform) {
 
@@ -53,20 +56,40 @@ public class ZoomClick : MonoBehaviour {
 
 				ZoomedOut = false;
 				ZoomButton.SetActive(true);
+				OptionsCanvas.GetComponent<CanvasGroup>().alpha = 0;
+				OptionsCanvas.GetComponent<CanvasGroup>().interactable = false;
 			}
 		}
 
-		if (Input.GetMouseButtonDown(0)&& !ZoomedOut)
+		if (Input.GetMouseButtonDown(0) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
 		{
 			lastPosition = Input.mousePosition;
 		}
 		
-		if (Input.GetMouseButton(0) && !ZoomedOut)
+		if (Input.GetMouseButton(0) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
 		{
 			Vector3 delta = Input.mousePosition - lastPosition;
 			Camera.main.transform.Translate(delta.x * (1 / Time.deltaTime) * mouseSensitivity, delta.y * (1 / Time.deltaTime) * mouseSensitivity, 0);
 
 			lastPosition = Input.mousePosition;
+		}
+
+		if (Input.GetKey(KeyCode.LeftArrow) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		{
+			Camera.main.transform.Translate(-2, 0, 0);
+		}
+
+		if (Input.GetKey(KeyCode.RightArrow) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		{
+			Camera.main.transform.Translate(2, 0, 0);
+		}
+		if (Input.GetKey(KeyCode.UpArrow) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		    {
+			Camera.main.transform.Translate(0, 2, 0);
+		}
+		if (Input.GetKey(KeyCode.DownArrow) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		{
+			Camera.main.transform.Translate(0, -2, 0);
 		}
 
 		//increment timer once per frame
@@ -106,13 +129,13 @@ public class ZoomClick : MonoBehaviour {
 	
 	public void ZoomOutClick()
 	{
-		ZoomedOut = true;
 		DockButton.GetComponent<CanvasGroup> ().alpha = 0;
 		DockButton.GetComponent<Button> ().interactable = false;
 
 		Origin.GetComponent<Gridlines>().SubGrid(false);
 		ZoomButton.SetActive(false);
 		StartLerpOut ();
+		ZoomedOut = true;
 	}
 
 	public void StartLerpIn(RaycastHit hit)

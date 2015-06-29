@@ -7,12 +7,15 @@ public class Ships : MonoBehaviour {
 	public GameObject[] totalShips;
 	GameObject smallShip;
 	GameObject optionsCanvas;
+	GameObject controlPanel;
 	GameObject ocean;
 	GameObject DockButton;
+	GameObject ZoomButton;
 	Draggable[] allShips;
 	public int shipCount;
 	public bool stickyShip;
-	bool pointerOverPanel;
+	public bool pointerOverPanel;
+	public bool pointerOverZoom;
 
 	Vector3 ToTarget;
 	Vector3 FromPosition;
@@ -27,9 +30,12 @@ public class Ships : MonoBehaviour {
 		shipCount = 0;
 		stickyShip = false;
 		pointerOverPanel = false;
+		pointerOverZoom = false;
 		optionsCanvas = GameObject.Find ("OptionsCanvas");
+		controlPanel = GameObject.Find ("ControlPanel");
 		ocean = GameObject.Find ("Ocean");
 		DockButton = GameObject.Find ("DockButton");
+		ZoomButton = gameObject.GetComponent<ZoomClick> ().ZoomButton;
 		allShips = GameObject.Find ("ShipPanel").GetComponentsInChildren<Draggable> ();
 
 		perc = 1.0f;
@@ -62,21 +68,21 @@ public class Ships : MonoBehaviour {
 		}
 
 		// A valid place to set down the ship
-		else if (stickyShip && Input.GetMouseButtonDown(0) && WithinBounds(hitInfo.point) && !pointerOverPanel)
+		else if (stickyShip && Input.GetMouseButtonDown(0) && WithinBounds(hitInfo.point) && !pointerOverPanel && !pointerOverZoom)
 		{
 			totalShips[shipCount].transform.position = SnapToGrid(hitInfo.point);
 			stickyShip = false;
 
-			optionsCanvas.SetActive(true);
+			optionsCanvas.GetComponent<CanvasGroup>().alpha = 1;
+			optionsCanvas.GetComponent<CanvasGroup>().interactable = true;
+			controlPanel.SetActive(false);
+
+			ZoomButton.GetComponent<Button>().interactable = false;
 			optionsCanvas.transform.position = totalShips[shipCount].transform.position;
 			perc = 0;
 			CurrentLerpTime = 0;
 			FromPosition = Camera.main.transform.position;
 			ToTarget = new Vector3(totalShips[shipCount].transform.position.x, totalShips[shipCount].transform.position.y, -10);
-
-			// freeze camera until choice is made
-			ocean.GetComponent<ZoomClick>().enabled = false;
-			GameObject.Find("ZoomButton").GetComponent<Button>().interactable = false;
 
 			// lock dock until choice is made
 			foreach (Draggable drag in allShips)
@@ -95,6 +101,22 @@ public class Ships : MonoBehaviour {
 			stickyShip = false;
 			smallShip.SetActive(true);
 			smallShip.transform.SetParent(GameObject.Find ("ShipPanel").transform);
+
+			if (!gameObject.GetComponent<ZoomClick>().ZoomedOut) 
+			{
+				gameObject.GetComponent<ZoomClick>().ZoomOutClick();
+			}
+
+			// unlock dock when choice is made
+			foreach (Draggable drag in allShips)
+			{
+				drag.enabled = true;
+			}
+		}
+
+		else if (stickyShip && Input.GetMouseButtonDown(0) && WithinBounds(hitInfo.point) && pointerOverZoom)
+		{
+			pointerOverZoom = false;
 		}
 
 		// Invalid place to set down ship - hide ship until cursor returns to bounds
@@ -113,6 +135,12 @@ public class Ships : MonoBehaviour {
 
 			DockButton.GetComponent<CanvasGroup> ().alpha = 0;
 			DockButton.GetComponent<Button> ().interactable = false;
+
+			if (!gameObject.GetComponent<ZoomClick>().ZoomedOut) 
+			{
+				gameObject.GetComponent<ZoomClick>().ZoomOutClick();
+			}
+
 		}
 
 		//increment timer once per frame
@@ -162,6 +190,8 @@ public class Ships : MonoBehaviour {
 		// get most significant digits
 		float x = ((int)(dropPoint.x / 10)) * 10;
 		float y = ((int)(dropPoint.y / 10)) * 10;
+		float width;
+		float height;
 
 		// round up if needed
 		if (dropPoint.x - x >= 5) 
@@ -179,8 +209,8 @@ public class Ships : MonoBehaviour {
 		// width is height and height is width
 		if ((int)(totalShips[shipCount].transform.eulerAngles.z) % 180 == 90)
 		{
-			float width = totalShips[shipCount].transform.localScale.y;
-			float height = totalShips[shipCount].transform.localScale.x;
+			width = totalShips[shipCount].transform.localScale.y;
+			height = totalShips[shipCount].transform.localScale.x;
 
 			if (x + (width / 2) > 1000)
 			{
@@ -201,8 +231,8 @@ public class Ships : MonoBehaviour {
 		}
 		else
 		{
-			float height = totalShips[shipCount].transform.localScale.y;
-			float width = totalShips[shipCount].transform.localScale.x;
+			height = totalShips[shipCount].transform.localScale.y;
+			width = totalShips[shipCount].transform.localScale.x;
 
 			if (x + (width / 2) > 1000)
 			{
@@ -234,6 +264,17 @@ public class Ships : MonoBehaviour {
 		pointerOverPanel = false;
 	}
 
+	public void ZoomButtonEnter()
+	{
+		pointerOverZoom = true;
+	}
+
+	public void ZoomButtonExit()
+	{
+		pointerOverZoom = false;
+	}
+
+
 	public void DockShip()
 	{
 		Destroy(totalShips[shipCount]);
@@ -256,4 +297,66 @@ public class Ships : MonoBehaviour {
 		perc = 0;
 		CurrentLerpTime = 0;
 	}
+
+	public void RemoveShipCollision ()
+	{
+		GameObject currentShip = totalShips [shipCount];
+		bool right = true;
+		bool up = true;
+
+		// vertical ship
+		if ((int)(currentShip.transform.eulerAngles.z) % 180 == 90)
+		{				
+			while (ShipIntersects(currentShip) && right)
+			{
+				if (currentShip.transform.position.x < 990)
+				{
+					currentShip.transform.position += new Vector3(10,0,0);
+				}
+				else 
+				{
+					right = false;
+				}
+			}
+
+			while (ShipIntersects(currentShip) && !right)
+			{
+				currentShip.transform.position += new Vector3(-10,0,0);
+			}
+		}
+
+		//horizontal ship
+		else
+		{
+			while (ShipIntersects(currentShip) && up)
+			{
+				if (currentShip.transform.position.y < 990)
+				{
+					currentShip.transform.position += new Vector3(0,10,0);
+				}
+				else 
+				{
+					up = false;
+				}
+			}
+			
+			while (ShipIntersects(currentShip) && !up)
+			{
+				currentShip.transform.position += new Vector3(0,-10,0);
+			}
+		}
+	}
+
+	bool ShipIntersects(GameObject ship)
+	{
+		for (int i = 0; i < shipCount; i++) 
+		{
+			if (ship.GetComponent<MeshRenderer>().bounds.Intersects(totalShips[i].GetComponent<MeshRenderer>().bounds))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
 }
+

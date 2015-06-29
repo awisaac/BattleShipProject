@@ -38,6 +38,11 @@ public class Draggable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 		GetComponent<CanvasGroup> ().blocksRaycasts = false;
 		transform.SetParent(GameObject.Find ("CanvasPanel").transform);
 		GetSelectedShip ();
+
+		if (!GameObject.Find ("Ocean").GetComponent<ZoomClick> ().ZoomedOut)
+		{
+			GameObject.Find ("Ocean").GetComponent<ZoomClick> ().ZoomOutClick ();
+		}
 	}
 
 	public void OnDrag(PointerEventData eventData)
