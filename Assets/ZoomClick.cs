@@ -2,14 +2,14 @@
 using UnityEngine.UI;
 using System.Collections;
 
+// This class handles all camera movement
 public class ZoomClick : MonoBehaviour {
 
 	float XCoord;
 	float YCoord;
 	GameObject Origin;
-	GameObject DockButton;
-	public GameObject ZoomButton;	
-	GameObject OptionsCanvas;
+	GameObject OptionsPanel;
+	GameObject ZoomButton;
 
 	// Lerp Values for Camera to zoom in
 	Vector3 ToTarget;
@@ -22,25 +22,20 @@ public class ZoomClick : MonoBehaviour {
 
 	float mouseSensitivity = 0.02f;
 	Vector3 lastPosition;
-	public bool ZoomedOut;
+	public bool menuLocked;
 
 	// Use this for initialization
 	void Start () {
-		ZoomedOut = true;
 		Origin = GameObject.Find ("Origin");
-		ZoomButton = GameObject.Find ("ZoomButton");
-		DockButton = GameObject.Find ("DockButton");
-		OptionsCanvas = GameObject.Find ("OptionsCanvas");
-
-		ZoomButton.SetActive (false);
-
+		OptionsPanel = GameObject.Find ("OptionsPanel");
+		ZoomButton = GameObject.Find("ZoomButton");
 		ToTarget = Camera.main.transform.position;
 		FromPosition = Camera.main.transform.position;
 		CurrentLerpTime = 0;
 		TotalLerpTime = 0.5f; // 1/2 second to transition camera
 
 		StartOrtho = 500;
-		EndOrtho = 500;
+		EndOrtho = 50;
 		perc = 1.0f;
 	}
 	
@@ -48,25 +43,24 @@ public class ZoomClick : MonoBehaviour {
 	void Update () {
 
 		// Initial Zoom In where user clicks
-		if (Input.GetMouseButtonDown (0) && ZoomedOut && !gameObject.GetComponent<Ships>().pointerOverPanel) {
+		if (Input.GetMouseButtonDown (0) && ZoomedOut() && !gameObject.GetComponent<Ships>().pointerOverPanel) {
 			RaycastHit hitInfo = new RaycastHit ();
 			if (Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitInfo) && hitInfo.transform == transform) {
 
-				StartLerpIn(hitInfo);
+				CenterCamera(hitInfo.point);
 
-				ZoomedOut = false;
-				ZoomButton.SetActive(true);
-				OptionsCanvas.GetComponent<CanvasGroup>().alpha = 0;
-				OptionsCanvas.GetComponent<CanvasGroup>().interactable = false;
+				ZoomButton.GetComponent<CanvasGroup>().alpha = 1;
+				ZoomButton.GetComponent<CanvasGroup>().interactable = true;
+
 			}
 		}
 
-		if (Input.GetMouseButtonDown(0) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		if (Input.GetMouseButtonDown(0) && !ZoomedOut() && !menuLocked)
 		{
 			lastPosition = Input.mousePosition;
 		}
 		
-		if (Input.GetMouseButton(0) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		if (Input.GetMouseButton(0) && !ZoomedOut() && !menuLocked)
 		{
 			Vector3 delta = Input.mousePosition - lastPosition;
 			Camera.main.transform.Translate(delta.x * (1 / Time.deltaTime) * mouseSensitivity, delta.y * (1 / Time.deltaTime) * mouseSensitivity, 0);
@@ -74,36 +68,37 @@ public class ZoomClick : MonoBehaviour {
 			lastPosition = Input.mousePosition;
 		}
 
-		if (Input.GetKey(KeyCode.LeftArrow) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		if (Input.GetKey(KeyCode.LeftArrow) && !ZoomedOut() && !menuLocked)
 		{
 			Camera.main.transform.Translate(-2, 0, 0);
 		}
 
-		if (Input.GetKey(KeyCode.RightArrow) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		if (Input.GetKey(KeyCode.RightArrow) && !ZoomedOut() && !menuLocked)
 		{
 			Camera.main.transform.Translate(2, 0, 0);
 		}
-		if (Input.GetKey(KeyCode.UpArrow) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		if (Input.GetKey(KeyCode.UpArrow) && !ZoomedOut() && !menuLocked)
 		    {
 			Camera.main.transform.Translate(0, 2, 0);
 		}
-		if (Input.GetKey(KeyCode.DownArrow) && !ZoomedOut && OptionsCanvas.GetComponent<CanvasGroup>().alpha == 0)
+		if (Input.GetKey(KeyCode.DownArrow) && !ZoomedOut() && !menuLocked)
 		{
 			Camera.main.transform.Translate(0, -2, 0);
 		}
 
-		//increment timer once per frame
-		CurrentLerpTime += Time.deltaTime;
-		if (CurrentLerpTime > TotalLerpTime) {
-			CurrentLerpTime = TotalLerpTime;
-		}
-
 		//lerp!
 		if (perc < 1.0f) {
+			CurrentLerpTime += Time.deltaTime;
 			perc = CurrentLerpTime / TotalLerpTime;
 			Camera.main.transform.position = Vector3.Lerp (FromPosition, ToTarget, perc);
 			Camera.main.orthographicSize = Mathf.Lerp (StartOrtho, EndOrtho, perc);
+
+			if (ZoomedIn()) 
+			{
+				Origin.GetComponent<Gridlines> ().SubGrid (true);
+			}
 		}
+
 
 		if (Camera.main.transform.position.x < 25) {
 			Camera.main.transform.position = new Vector3 (25, Camera.main.transform.position.y, -10);
@@ -120,46 +115,52 @@ public class ZoomClick : MonoBehaviour {
 		if (Camera.main.transform.position.y > 975) {
 			Camera.main.transform.position = new Vector3 (Camera.main.transform.position.x, 975, -10);
 		}
-		
-		if (perc == 1.0f && !ZoomedOut) 
-		{
-			Origin.GetComponent<Gridlines> ().SubGrid (true);
-		}
 	}
-	
+
+	public bool ZoomedOut()
+	{
+		return Camera.main.orthographicSize == 500;
+	}
+
+	public bool ZoomedIn()
+	{
+		return Camera.main.orthographicSize == 50;
+	}
+
 	public void ZoomOutClick()
 	{
-		DockButton.GetComponent<CanvasGroup> ().alpha = 0;
-		DockButton.GetComponent<Button> ().interactable = false;
+		ZoomButton.GetComponent<CanvasGroup>().alpha = 0;
+		ZoomButton.GetComponent<CanvasGroup>().interactable = false;
 
 		Origin.GetComponent<Gridlines>().SubGrid(false);
-		ZoomButton.SetActive(false);
-		StartLerpOut ();
-		ZoomedOut = true;
-	}
+		GetComponent<Ships> ().pointerOverZoom = false;
 
-	public void StartLerpIn(RaycastHit hit)
-	{
-		StartOrtho = 500.0f;
-		EndOrtho = 50.0f;
-		ToTarget = new Vector3 (hit.point.x, hit.point.y, -10);
-
-		FromPosition = Camera.main.transform.position;		
-
-		CurrentLerpTime = 0;
-		perc = 0;
-	}
-
-	void StartLerpOut()
-	{
 		StartOrtho = 50.0f;
 		EndOrtho = 500.0f;
 		ToTarget = new Vector3 (500,500, -10);
-
+		
 		FromPosition = Camera.main.transform.position;		
-
+		
 		CurrentLerpTime = 0;
 		perc = 0;
 	}
 
+	public void CenterCamera(Vector3 position)
+	{
+		if(Camera.main.orthographicSize == 500.0f) {
+			StartOrtho = 500.0f;
+			EndOrtho = 50.0f;
+		}
+
+		else
+		{
+			StartOrtho = 50.0f;
+			EndOrtho = 50.0f;
+		}
+
+		ToTarget = new Vector3 (position.x, position.y, -10);		
+		FromPosition = Camera.main.transform.position;				
+		CurrentLerpTime = 0;
+		perc = 0;
+	}
 }

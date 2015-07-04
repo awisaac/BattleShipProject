@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
+// This class allows the UI element ships in the dock panel to be dropped onto the world space ocean and
+// converts them to world space objects
 public class Draggable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler {
 
 	public GameObject carrierPrefab;
@@ -36,10 +38,10 @@ public class Draggable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 	public void OnBeginDrag(PointerEventData eventData)
 	{
 		GetComponent<CanvasGroup> ().blocksRaycasts = false;
-		transform.SetParent(GameObject.Find ("CanvasPanel").transform);
+		transform.SetParent(GameObject.Find ("OptionsPanel").transform);
 		GetSelectedShip ();
 
-		if (!GameObject.Find ("Ocean").GetComponent<ZoomClick> ().ZoomedOut)
+		if (!GameObject.Find ("Ocean").GetComponent<ZoomClick> ().ZoomedOut())
 		{
 			GameObject.Find ("Ocean").GetComponent<ZoomClick> ().ZoomOutClick ();
 		}
@@ -55,18 +57,16 @@ public class Draggable : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDra
 		ZoomClick zoom = ocean.GetComponent<ZoomClick> ();
 		RaycastHit hitInfo = new RaycastHit ();
 
-		if (Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitInfo) && hitInfo.transform == ocean.transform && zoom.ZoomedOut) {
+		if (Physics.Raycast (Camera.main.ScreenPointToRay (Input.mousePosition), out hitInfo) && hitInfo.transform == ocean.transform && zoom.ZoomedOut()) {
 			
-			zoom.StartLerpIn (hitInfo);			
-			zoom.ZoomedOut = false;
-			zoom.ZoomButton.SetActive (true);
+			zoom.CenterCamera(hitInfo.point);			
 			gameObject.SetActive (false);
 
 			// place ship in initial drop position
 			ocean.GetComponent<Ships>().PlaceShip(selectedShip, gameObject);
 		}
 
-		else if (!zoom.ZoomedOut && ocean.GetComponent<Ships>().WithinBounds(hitInfo.point))
+		else if (!zoom.ZoomedOut() && ocean.GetComponent<Ships>().WithinBounds(hitInfo.point))
 		{
 			gameObject.SetActive(false);
 

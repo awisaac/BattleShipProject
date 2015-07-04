@@ -49,8 +49,10 @@
      <Compile Include="Assets\Draggable.cs" />
      <Compile Include="Assets\FogOfWar.cs" />
      <Compile Include="Assets\Gridlines.cs" />
+     <Compile Include="Assets\MoveShip.cs" />
      <Compile Include="Assets\Options.cs" />
      <Compile Include="Assets\Ships.cs" />
+     <Compile Include="Assets\Turns.cs" />
      <Compile Include="Assets\ZoomClick.cs" />
  <Reference Include="UnityEngine.UI">
  <HintPath>C:/Program Files/Unity/Editor/Data/UnityExtensions/Unity/GUISystem/UnityEngine.UI.dll</HintPath>
