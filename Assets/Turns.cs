@@ -40,7 +40,10 @@ public class Turns : MonoBehaviour {
 						currentShip = ship;
 						shipSelected = true;
 
-						OptionsPanel.GetComponent<Options>().MenuShow(62, true);
+						if (GetComponent<ZoomClick>().ZoomedIn())
+						{
+							OptionsPanel.GetComponent<Options>().MenuShow(62, true);
+						}
 
 						GetComponent<Ships>().currentShip = currentShip; // makes rotate work
 

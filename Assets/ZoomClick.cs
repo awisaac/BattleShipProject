@@ -7,7 +7,7 @@ public class ZoomClick : MonoBehaviour {
 
 	float XCoord;
 	float YCoord;
-	GameObject Origin;
+	GameObject Grid;
 	GameObject OptionsPanel;
 	GameObject ZoomButton;
 
@@ -26,7 +26,7 @@ public class ZoomClick : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		Origin = GameObject.Find ("Origin");
+		Grid = GameObject.Find ("Grid");
 		OptionsPanel = GameObject.Find ("OptionsPanel");
 		ZoomButton = GameObject.Find("ZoomButton");
 		ToTarget = Camera.main.transform.position;
@@ -95,7 +95,7 @@ public class ZoomClick : MonoBehaviour {
 
 			if (ZoomedIn()) 
 			{
-				Origin.GetComponent<Gridlines> ().SubGrid (true);
+				Grid.GetComponent<Gridlines> ().SubGrid (true);
 			}
 		}
 
@@ -132,7 +132,7 @@ public class ZoomClick : MonoBehaviour {
 		ZoomButton.GetComponent<CanvasGroup>().alpha = 0;
 		ZoomButton.GetComponent<CanvasGroup>().interactable = false;
 
-		Origin.GetComponent<Gridlines>().SubGrid(false);
+		Grid.GetComponent<Gridlines>().SubGrid(false);
 		GetComponent<Ships> ().pointerOverZoom = false;
 
 		StartOrtho = 50.0f;

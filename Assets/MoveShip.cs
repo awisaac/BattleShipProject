@@ -71,7 +71,7 @@ public class MoveShip : MonoBehaviour {
 			{
 				isMoving = false;
 				GetComponent<Turns>().currentShip.transform.position = GetComponent<Ships>().SnapToGrid(GetComponent<Turns>().currentShip, hitInfo.point);
-
+				GetComponent<FogOfWar> ().ShipSight (GetComponent<Turns> ().currentShip);
 				// hide move button, make cancel button return ship to original location and confirm zoom out
 				OptionsPanel.GetComponent<Options>().MenuShow(7,true);
 
@@ -165,6 +165,5 @@ public class MoveShip : MonoBehaviour {
 		line.enabled = false;
 		GetComponent<Turns>().shipSelected = false;
 		GetComponent<ZoomClick> ().ZoomOutClick ();
-		GetComponent<FogOfWar> ().ShipSight (GetComponent<Turns> ().currentShip);
 	}
 }
